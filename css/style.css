@@ -3,9 +3,15 @@
   --txt:#e6edf3; --mut:#8b98a8; --acc:#f0a500; --good:#3fb950; --bad:#f85149;
   --blue:#388bfd;
 }
+@font-face{
+  font-family:'GameFont';
+  src:url('fonts/game-medium.woff2') format('woff2');
+  font-weight:400 700;
+  font-display:swap;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--txt);font-family:-apple-system,"Segoe UI",Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:14px;line-height:1.5}
-#app{max-width:1100px;margin:0 auto;padding:14px}
+body{background:var(--bg);color:var(--txt);font-family:'GameFont',-apple-system,"Segoe UI",Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:14px;line-height:1.5;-webkit-text-size-adjust:100%}
+#app{max-width:1100px;margin:0 auto;padding:14px;padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
 h1,h2,h3{font-weight:700}
 button{font-family:inherit;cursor:pointer;border:none;border-radius:7px;padding:8px 14px;font-size:13px;background:var(--panel2);color:var(--txt);transition:.12s}
 button:hover{filter:brightness(1.2)}
@@ -23,14 +29,14 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .pill{display:inline-block;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700}
 
 /* 팀 선택 */
-.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
 .team-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;transition:.15s;border-left:5px solid #555}
 .team-card:hover{transform:translateY(-2px);border-color:var(--acc)}
 .team-card .nm{font-size:17px;font-weight:800}
 .ovrbig{font-size:30px;font-weight:900;line-height:1}
 
 /* 헤더바 */
-.topbar{display:flex;align-items:center;gap:12px;background:linear-gradient(90deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:12px;flex-wrap:wrap}
+.topbar{display:flex;align-items:center;gap:12px;background:linear-gradient(90deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:12px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
 .navbtns{display:flex;gap:6px;flex-wrap:wrap}
 .navbtns button{padding:7px 11px;font-size:12px}
 
@@ -75,4 +81,52 @@ select,input{background:var(--panel2);color:var(--txt);border:1px solid var(--li
 .kpi b{font-size:20px;display:block}
 .subtabs button{background:transparent;border-bottom:2px solid transparent;border-radius:0;color:var(--mut)}
 .subtabs button.active{color:var(--txt);border-color:var(--acc)}
-@media(max-width:640px){.scoreboard{grid-template-columns:1fr;text-align:center}.ovrbig{font-size:24px}}
+/* ===== 모바일 최적화 (아이폰 13 Pro Max · 428px 기준) ===== */
+@media(max-width:640px){
+  body{font-size:13px}
+  #app{padding:10px;padding-top:max(10px,env(safe-area-inset-top));padding-bottom:max(10px,env(safe-area-inset-bottom))}
+  h1{font-size:23px!important}
+  .panel{padding:11px;border-radius:10px;margin-bottom:10px}
+
+  /* 상단바: 가로 스크롤 네비 */
+  .topbar{gap:8px;padding:9px 10px;border-radius:10px}
+  .topbar>div:first-child{font-size:13px}
+  .navbtns{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;padding-bottom:2px;scrollbar-width:none}
+  .navbtns::-webkit-scrollbar{display:none}
+  .navbtns button{flex:0 0 auto;padding:8px 10px;font-size:12px}
+
+  /* 팀 선택 1열 */
+  .team-grid{grid-template-columns:1fr}
+  .ovrbig{font-size:26px}
+
+  /* KPI 한 줄에 고르게 */
+  .kpi{flex:1 1 0;min-width:0;padding:9px 6px}
+  .kpi b{font-size:17px}
+
+  /* 넓은 표는 패널 내 가로 스크롤 */
+  .panel{overflow-x:auto}
+  table{font-size:12px}
+  th,td{padding:5px 6px}
+  .sbar{width:42px}
+
+  /* 스코어보드 */
+  .scoreboard{grid-template-columns:1fr 1fr;gap:10px;padding:12px}
+  .scoreboard>div:nth-child(2){grid-column:1/-1;order:-1}
+  .diamond{width:104px;height:104px}
+
+  /* 경기 진행 버튼 풀폭 + 로그 높이 */
+  .col[style*="flex:1"]{width:100%}
+  .gamelog{height:240px;font-size:12px}
+  button{padding:9px 13px}
+  .btn-primary[style]{font-size:15px!important}
+
+  /* 모달 풀스크린에 가깝게 */
+  .modal{max-height:90vh;border-radius:14px 14px 0 0;padding:16px}
+  .modal-bg{align-items:flex-end}
+  select,input{font-size:16px} /* iOS 자동 확대 방지 */
+}
+@media(max-width:430px){
+  .navbtns button{padding:8px 9px;font-size:11.5px}
+  .ovrbig{font-size:24px}
+  .diamond{width:96px;height:96px}
+}
