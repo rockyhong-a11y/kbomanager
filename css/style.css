@@ -1,0 +1,78 @@
+:root{
+  --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --line:#2a3340;
+  --txt:#e6edf3; --mut:#8b98a8; --acc:#f0a500; --good:#3fb950; --bad:#f85149;
+  --blue:#388bfd;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,"Segoe UI",Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:14px;line-height:1.5}
+#app{max-width:1100px;margin:0 auto;padding:14px}
+h1,h2,h3{font-weight:700}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:7px;padding:8px 14px;font-size:13px;background:var(--panel2);color:var(--txt);transition:.12s}
+button:hover{filter:brightness(1.2)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:var(--acc);color:#1a1a1a;font-weight:700}
+.btn-good{background:var(--good);color:#04210d;font-weight:700}
+.btn-blue{background:var(--blue);color:#fff;font-weight:600}
+.btn-ghost{background:transparent;border:1px solid var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.col{display:flex;flex-direction:column;gap:8px}
+.spacer{flex:1}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.mut{color:var(--mut)} .good{color:var(--good)} .bad{color:var(--bad)} .acc{color:var(--acc)}
+.tag{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:11px;color:var(--mut)}
+.pill{display:inline-block;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700}
+
+/* 팀 선택 */
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px}
+.team-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;transition:.15s;border-left:5px solid #555}
+.team-card:hover{transform:translateY(-2px);border-color:var(--acc)}
+.team-card .nm{font-size:17px;font-weight:800}
+.ovrbig{font-size:30px;font-weight:900;line-height:1}
+
+/* 헤더바 */
+.topbar{display:flex;align-items:center;gap:12px;background:linear-gradient(90deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:12px;flex-wrap:wrap}
+.navbtns{display:flex;gap:6px;flex-wrap:wrap}
+.navbtns button{padding:7px 11px;font-size:12px}
+
+/* 테이블 */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 8px;text-align:center;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase}
+td.l,th.l{text-align:left}
+tr.me{background:rgba(240,165,0,.10)}
+tr.hl:hover{background:var(--panel2)}
+.score-tbl td{font-variant-numeric:tabular-nums}
+
+/* 스탯 막대 */
+.sb{display:inline-flex;align-items:center;gap:5px}
+.sbar{width:54px;height:7px;background:#2a3340;border-radius:4px;overflow:hidden}
+.sbar i{display:block;height:100%}
+.ovr{font-weight:800;border-radius:6px;padding:1px 7px;color:#0d1117;font-size:12px}
+
+/* 경기 화면 */
+.scoreboard{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;background:var(--panel2);border-radius:12px;padding:14px;margin-bottom:10px}
+.diamond{position:relative;width:120px;height:120px;margin:0 auto}
+.base{position:absolute;width:22px;height:22px;background:#2a3340;border:1px solid #45506080;transform:rotate(45deg)}
+.base.on{background:var(--acc)}
+.b1{right:6px;top:49px}.b2{left:49px;top:6px}.b3{left:6px;top:49px}
+.gamelog{background:#0a0e14;border:1px solid var(--line);border-radius:10px;padding:10px;height:300px;overflow:auto;font-family:ui-monospace,monospace;font-size:12.5px;white-space:pre-wrap}
+.gamelog .hl{color:var(--acc)}
+.countbox{display:flex;gap:14px;justify-content:center;font-size:13px;margin:6px 0}
+.outdot{display:inline-block;width:11px;height:11px;border-radius:50%;border:1px solid var(--mut);margin:0 2px}
+.outdot.on{background:var(--bad);border-color:var(--bad)}
+
+/* 모달 */
+.modal-bg{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;max-width:640px;width:100%;max-height:86vh;overflow:auto}
+.list-row{display:flex;align-items:center;gap:10px;padding:7px 8px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:6px}
+.list-row:hover{background:var(--panel2)}
+select,input{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:5px 7px;font-family:inherit;font-size:13px}
+.news-item{padding:7px 4px;border-bottom:1px solid var(--line)}
+.news-item.imp{background:rgba(248,81,73,.07)}
+.sec-title{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px}
+.flex-wrap{display:flex;flex-wrap:wrap;gap:6px}
+.kpi{background:var(--panel2);border-radius:10px;padding:10px 14px;min-width:90px;text-align:center}
+.kpi b{font-size:20px;display:block}
+.subtabs button{background:transparent;border-bottom:2px solid transparent;border-radius:0;color:var(--mut)}
+.subtabs button.active{color:var(--txt);border-color:var(--acc)}
+@media(max-width:640px){.scoreboard{grid-template-columns:1fr;text-align:center}.ovrbig{font-size:24px}}
