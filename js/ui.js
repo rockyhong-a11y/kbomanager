@@ -52,7 +52,7 @@ function renderSelect() {
     <div class="team-grid">
       ${teams.map(t => `
         <div class="team-card" style="border-left-color:${t.color}" onclick="UIH.selectTeam('${t.id}')">
-          <div class="row"><div class="nm">${t.name}</div><div class="spacer"></div><div class="ovrbig" style="color:${ovrColor(t.ovr)}">${t.ovr}</div></div>
+          <div class="row" style="align-items:center">${teamBadge(t.id, 38)}<div class="nm">${t.name}</div><div class="spacer"></div><div class="ovrbig" style="color:${ovrColor(t.ovr)}">${t.ovr}</div></div>
           <div class="row mut" style="margin-top:6px;font-size:12px">
             <span>난이도 ${t.difficulty}</span>
           </div>
@@ -123,11 +123,11 @@ function renderHub() {
   const matchCard = m ? `
     <div class="panel">
       <div class="sec-title">오늘 경기</div>
-      <div class="row" style="font-size:18px;font-weight:800">
-        <span>${LEAGUE.teams[m.away].short}</span><span class="mut">@</span><span>${LEAGUE.teams[m.home].short}</span>
+      <div class="row" style="font-size:18px;font-weight:800;align-items:center">
+        ${badgeName(m.away, LEAGUE.teams[m.away].short, 34)}<span class="mut">@</span>${badgeName(m.home, LEAGUE.teams[m.home].short, 34)}
         <span class="tag">${isHome ? '홈' : '원정'}</span>
       </div>
-      <div class="mut" style="margin:6px 0">상대: ${LEAGUE.teams[opp].name} (오버롤 ${LEAGUE.teams[opp].ovr})</div>
+      <div class="mut" style="margin:6px 0">상대: ${LEAGUE.teams[opp].name} (오버롤 ${LEAGUE.teams[opp].ovr}) · 최근 ${formStrip(opp)}</div>
       <div class="row" style="margin-top:8px">
         <button class="btn-primary" onclick="renderLineup()">⚾ 라인업 짜고 경기 시작</button>
         <button class="btn-ghost" onclick="UIH.meeting('pre')">🗣️ 경기 전 팀 미팅</button>
@@ -185,15 +185,15 @@ UIH.quickSimDay = () => {
 // ============================================================
 function standingsTable(mini) {
   const s = standings();
-  const leadPct = s[0] ? s[0].pct : 0;
-  return `<table><thead><tr><th>순위</th><th class="l">팀</th><th>승</th><th>패</th><th>무</th><th>승률</th><th>GB</th>${mini ? '' : '<th>득</th><th>실</th><th>연속</th>'}</tr></thead><tbody>
+  return `<table><thead><tr><th>순위</th><th class="l">팀</th><th>승</th><th>패</th><th>무</th><th>승률</th><th>GB</th>${mini ? '' : '<th>득</th><th>실</th><th>연속</th><th class="l">최근10</th>'}</tr></thead><tbody>
     ${s.map(x => {
       const gb = ((s[0].t.w - x.t.w) + (x.t.l - s[0].t.l)) / 2;
-      return `<tr class="${x.t.id === LEAGUE.userTeam ? 'me' : ''} hl">
-        <td>${x.rank}</td><td class="l"><b>${x.t.name}</b></td>
+      return `<tr class="${x.t.id === LEAGUE.userTeam ? 'me' : ''} hl clickrow" onclick="renderTeamView('${x.t.id}')">
+        <td>${x.rank <= 5 && LEAGUE.phase !== 'preseason' ? '<span class="acc">' + x.rank + '</span>' : x.rank}</td>
+        <td class="l">${badgeName(x.t.id, '<b>' + x.t.name + '</b>', 20)}</td>
         <td>${x.t.w}</td><td>${x.t.l}</td><td>${x.t.d}</td><td>${x.pct.toFixed(3).replace(/^0/, '')}</td>
         <td>${x.rank === 1 ? '-' : gb.toFixed(1)}</td>
-        ${mini ? '' : `<td>${x.t.rf}</td><td>${x.t.ra}</td><td>${x.t.streak > 0 ? x.t.streak + '연승' : x.t.streak < 0 ? (-x.t.streak) + '연패' : '-'}</td>`}
+        ${mini ? '' : `<td>${x.t.rf}</td><td>${x.t.ra}</td><td>${x.t.streak > 0 ? '<span class="good">' + x.t.streak + '연승</span>' : x.t.streak < 0 ? '<span class="bad">' + (-x.t.streak) + '연패</span>' : '-'}</td><td class="l">${formStrip(x.t.id)}</td>`}
       </tr>`;
     }).join('')}
   </tbody></table>`;
@@ -245,7 +245,7 @@ function renderSquad() {
           <table><thead><tr><th>#</th><th class="l">이름</th><th>나이</th><th>OVR</th>
           ${g === 'P' ? '<th>구속</th><th>제구</th><th>구위</th><th>역할</th>' : '<th>파워</th><th>주루</th><th>컨택</th><th>수비</th><th class="l">포지션 숙련도</th>'}
           <th>상태</th></tr></thead><tbody>
-          ${ps.map(p => `<tr class="hl">
+          ${ps.map(p => `<tr class="hl clickrow" onclick="UIH.openPlayer(${p.pid})">
             <td>${fmtNum(p)}</td><td class="l"><b>${p.name}</b>${p.cur < p.peak ? ` <span class="mut" style="font-size:10px">▲${p.peak}</span>` : ''}</td>
             <td>${p.age}</td><td>${ovrBadge(p.ovr)}</td>
             ${g === 'P'
@@ -333,13 +333,15 @@ function renderLineup() {
           const main = `P:${p.stats.power} C:${p.stats.contact} S:${p.stats.speed} D:${p.stats.defense}`;
           return `<tr>
             <td><b>${i + 1}</b></td><td><span class="tag">${pos}</span></td>
-            <td class="l">#${fmtNum(p)} ${p.name} <span style="color:${gradeColor(p.prof[pos])}">(${p.prof[pos]})</span></td>
+            <td class="l"><span class="clickrow" style="text-decoration:underline" onclick="UIH.openPlayer(${pid})">#${fmtNum(p)} ${p.name}</span> <span style="color:${gradeColor(p.prof[pos])}">(${p.prof[pos]})</span></td>
             <td>${ovrBadge(p.ovr)}</td><td class="mut" style="font-size:11px">${main}</td>
             <td><button class="btn-ghost" onclick="UIH.swapSlot(${i})">교체</button></td>
             <td>${i > 0 ? `<button class="btn-ghost" onclick="UIH.moveOrder(${i},-1)">▲</button>` : ''}${i < 8 ? `<button class="btn-ghost" onclick="UIH.moveOrder(${i},1)">▼</button>` : ''}</td>
           </tr>`;
         }).join('')}
       </tbody></table>
+      <div class="sec-title">수비 배치도</div>
+      ${lineupField(d)}
       <div class="sec-title">대기 (벤치 ${d.bench.length} · 불펜 ${d.bullpen.length})</div>
       <div class="flex-wrap">${d.bench.map(pid => { const p = getP(pid); return `<span class="tag">${p.name} ${ovrBadge(p.ovr)} ${p.primary}</span>`; }).join('')}</div>
       <div class="flex-wrap" style="margin-top:6px">${d.bullpen.map(pid => { const p = getP(pid); return `<span class="tag">${p.name} ${ovrBadge(p.ovr)} ${roleK(p.role)}</span>`; }).join('')}</div>
@@ -391,32 +393,28 @@ function renderGame() {
 
   APP().innerHTML = `
     <div class="scoreboard">
-      <div style="text-align:right">
-        <div class="mut">${g.awayTeam.name} (원정)</div>
+      <div style="text-align:center">
+        <div class="mut">${teamBadge(g.awayTeam.id, 26)}<br>${g.awayTeam.short} <span style="font-size:11px">원정</span></div>
         <div class="ovrbig">${g.score.away}</div>
-        <div class="mut" style="font-size:11px">H ${g.hits.away} · E ${g.errors.away}</div>
       </div>
       <div style="text-align:center">
-        <div class="acc" style="font-weight:800">${g.finished ? '경기종료' : `${g.inning}회 ${halfK}`}</div>
-        <div class="diamond">
-          <div class="base b2 ${g.bases[1] ? 'on' : ''}"></div>
-          <div class="base b1 ${g.bases[0] ? 'on' : ''}"></div>
-          <div class="base b3 ${g.bases[2] ? 'on' : ''}"></div>
-        </div>
+        <div class="acc" style="font-weight:800;margin-bottom:2px">${g.finished ? '🏁 경기종료' : `${g.inning}회 ${halfK} ${g.half === 'top' ? '▲' : '▼'}`}</div>
+        ${gameField(g)}
         <div class="countbox"><span>OUT ${[0, 1, 2].map(o => `<span class="outdot ${o < g.outs ? 'on' : ''}"></span>`).join('')}</span></div>
       </div>
-      <div>
-        <div class="mut">${g.homeTeam.name} (홈)</div>
+      <div style="text-align:center">
+        <div class="mut">${teamBadge(g.homeTeam.id, 26)}<br>${g.homeTeam.short} <span style="font-size:11px">홈</span></div>
         <div class="ovrbig">${g.score.home}</div>
-        <div class="mut" style="font-size:11px">H ${g.hits.home} · E ${g.errors.home}</div>
       </div>
     </div>
 
+    <div class="panel" style="padding:8px;overflow-x:auto">${lineScoreTable(g)}</div>
+
     ${g.finished ? '' : `<div class="panel" style="padding:10px">
       <div class="row">
-        <div>🏏 타석: <b>${bat.name}</b> <span class="mut">(${g.lineups[battingSide].posByPid[bat.pid] || ''}, OVR ${bat.ovr})</span></div>
+        <div>🏏 타석: <b class="clickrow" style="text-decoration:underline" onclick="UIH.openPlayer(${bat.pid})">${bat.name}</b> <span class="mut">(${g.lineups[battingSide].posByPid[bat.pid] || ''}, OVR ${bat.ovr})</span></div>
         <div class="spacer"></div>
-        <div>⚾ 투수: <b>${pit.name}</b> <span class="mut">(${pit.team === LEAGUE.userTeam ? '' : LEAGUE.teams[pit.team].short + ' '}투구수 ${g.pitchCount[pit.pid]})</span></div>
+        <div>⚾ 투수: <b class="clickrow" style="text-decoration:underline" onclick="UIH.openPlayer(${pit.pid})">${pit.name}</b> <span class="mut">${pit.team === LEAGUE.userTeam ? '' : LEAGUE.teams[pit.team].short + ' '}투구수 ${g.pitchCount[pit.pid]}</span> ${staminaBar(pit, g.pitchCount[pit.pid])}</div>
       </div>
       ${mustReplace ? `<p class="bad" style="margin-top:6px">⚠️ 내 투수가 부상! 진행하려면 투수를 교체하세요.</p>` : ''}
     </div>`}
@@ -529,12 +527,11 @@ function renderPostGame(userGame, dayResults, farm) {
       <table class="score-tbl"><tbody>
       ${dayResults.map(({ m, r }) => {
         const win = r.winner;
-        const aw = `${LEAGUE.teams[m.away].short} ${r.as}`, hm = `${r.hs} ${LEAGUE.teams[m.home].short}`;
         const mine = r.user;
         return `<tr class="${mine ? 'me' : 'hl'}">
-          <td class="l" style="${win === 'away' ? 'font-weight:800' : 'opacity:.7'}">${aw}</td>
+          <td class="l" style="${win === 'away' ? 'font-weight:800' : 'opacity:.7'}">${badgeName(m.away, teamShort(m.away), 18)} ${r.as}</td>
           <td class="mut">:</td>
-          <td class="l" style="${win === 'home' ? 'font-weight:800' : 'opacity:.7'}">${hm}</td>
+          <td class="l" style="${win === 'home' ? 'font-weight:800' : 'opacity:.7'}">${r.hs} ${badgeName(m.home, teamShort(m.home), 18)}</td>
           <td class="mut">${r.winner === 'draw' ? '무' : ''}</td></tr>`;
       }).join('')}
       </tbody></table>
@@ -560,23 +557,29 @@ function renderLeaders() {
   const all = Object.values(LEAGUE.playersById);
   const bat = all.filter(p => !p.isPitcher && p.season.pa >= 10);
   const pit = all.filter(p => p.isPitcher && p.pseason.outs >= 15);
-  const top = (arr, fn, fmt, n = 10) => arr.slice().sort((a, b) => fn(b) - fn(a)).slice(0, n)
-    .map((p, i) => `<tr class="${p.team === LEAGUE.userTeam ? 'me' : ''}"><td>${i + 1}</td><td class="l">${p.name} <span class="mut">${LEAGUE.teams[p.team].short}</span></td><td><b>${fmt(p)}</b></td></tr>`).join('');
-  const tbl = (title, rows) => `<div class="panel" style="flex:1;min-width:230px"><div class="sec-title">${title}</div><table><tbody>${rows}</tbody></table></div>`;
+  const top = (arr, fn, fmt, color, n = 10) => {
+    const sorted = arr.slice().sort((a, b) => fn(b) - fn(a)).slice(0, n);
+    const mx = sorted.length ? fn(sorted[0]) || 1 : 1;
+    return sorted.map((p, i) => `<tr class="${p.team === LEAGUE.userTeam ? 'me' : ''} clickrow" onclick="UIH.openPlayer(${p.pid})">
+      <td>${i + 1}</td><td class="l">${badgeName(p.team, p.name, 18)}</td><td style="white-space:nowrap"><b>${fmt(p)}</b></td><td>${lbar(fn(p), mx, color)}</td></tr>`).join('');
+  };
+  const tbl = (title, rows) => `<div class="panel" style="flex:1;min-width:240px"><div class="sec-title">${title}</div><table><tbody>${rows}</tbody></table></div>`;
+  const eraRows = pit.slice().sort((a, b) => era(a.pseason) - era(b.pseason)).slice(0, 10);
+  const eraWorst = eraRows.length ? era(eraRows[eraRows.length - 1].pseason) || 1 : 1;
   APP().innerHTML = topbar() + `
     <div class="row" style="align-items:flex-start">
-      ${tbl('타율', top(bat, p => avg(p.season), p => fmt3(avg(p.season))))}
-      ${tbl('홈런', top(bat, p => p.season.hr, p => p.season.hr))}
-      ${tbl('타점', top(bat, p => p.season.rbi, p => p.season.rbi))}
-      ${tbl('OPS', top(bat, p => ops(p.season), p => ops(p.season).toFixed(3).replace(/^0/, '')))}
-      ${tbl('도루', top(bat, p => p.season.sb, p => p.season.sb))}
+      ${tbl('🏏 타율', top(bat, p => avg(p.season), p => fmt3(avg(p.season)), '#3fb950'))}
+      ${tbl('💥 홈런', top(bat, p => p.season.hr, p => p.season.hr, '#f0a500'))}
+      ${tbl('🎯 타점', top(bat, p => p.season.rbi, p => p.season.rbi, '#f0883e'))}
+      ${tbl('📊 OPS', top(bat, p => ops(p.season), p => ops(p.season).toFixed(3).replace(/^0/, ''), '#388bfd'))}
+      ${tbl('👟 도루', top(bat, p => p.season.sb, p => p.season.sb, '#7bc96f'))}
     </div>
     <div class="row" style="align-items:flex-start">
-      ${tbl('평균자책 (낮을수록)', pit.slice().sort((a, b) => era(a.pseason) - era(b.pseason)).slice(0, 10).map((p, i) => `<tr class="${p.team === LEAGUE.userTeam ? 'me' : ''}"><td>${i + 1}</td><td class="l">${p.name} <span class="mut">${LEAGUE.teams[p.team].short}</span></td><td><b>${era(p.pseason).toFixed(2)}</b></td></tr>`).join(''))}
-      ${tbl('다승', top(pit, p => p.pseason.w, p => p.pseason.w))}
-      ${tbl('탈삼진', top(pit, p => p.pseason.k, p => p.pseason.k))}
-      ${tbl('세이브', top(pit, p => p.pseason.sv, p => p.pseason.sv))}
-      ${tbl('홀드', top(pit, p => p.pseason.hld, p => p.pseason.hld))}
+      ${tbl('🛡️ 평균자책 (낮을수록)', eraRows.map((p, i) => `<tr class="${p.team === LEAGUE.userTeam ? 'me' : ''} clickrow" onclick="UIH.openPlayer(${p.pid})"><td>${i + 1}</td><td class="l">${badgeName(p.team, p.name, 18)}</td><td style="white-space:nowrap"><b>${era(p.pseason).toFixed(2)}</b></td><td>${lbar(eraWorst - era(p.pseason) + 0.3, eraWorst, '#3fb950')}</td></tr>`).join(''))}
+      ${tbl('🏆 다승', top(pit, p => p.pseason.w, p => p.pseason.w, '#f0a500'))}
+      ${tbl('⚾ 탈삼진', top(pit, p => p.pseason.k, p => p.pseason.k, '#388bfd'))}
+      ${tbl('🔒 세이브', top(pit, p => p.pseason.sv, p => p.pseason.sv, '#c30452'))}
+      ${tbl('🤝 홀드', top(pit, p => p.pseason.hld, p => p.pseason.hld, '#7bc96f'))}
     </div>`;
 }
 
@@ -683,3 +686,182 @@ function toast(msg) {
   d.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222d;border:1px solid #444;color:#fff;padding:10px 18px;border-radius:8px;z-index:99;font-size:13px';
   document.body.appendChild(d); setTimeout(() => d.remove(), 2200);
 }
+
+/* ============================================================
+ *  ⚾ 시각화 헬퍼 (엠블럼 · 레이더 · 야구장 · 스코어보드 등)
+ * ============================================================ */
+function teamColor(id) { const r = TEAMS_RAW[id]; const c = (LEAGUE.teams && LEAGUE.teams[id]) ? LEAGUE.teams[id].color : r.color; return c === '#000000' ? '#3b3b3b' : c; }
+function teamShort(id) { return (LEAGUE.teams && LEAGUE.teams[id]) ? LEAGUE.teams[id].short : TEAMS_RAW[id].short; }
+// 팀 엠블럼 (유니폼 크레스트 느낌의 원형 배지 + 야구공 실밥)
+function teamBadge(id, size = 30) {
+  const color = (LEAGUE.teams && LEAGUE.teams[id]) ? LEAGUE.teams[id].color : TEAMS_RAW[id].color;
+  const short = teamShort(id);
+  const fs = short.length >= 3 ? 11 : 15;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" style="vertical-align:middle;flex:0 0 auto">
+    <circle cx="20" cy="20" r="18.5" fill="${color}" stroke="#0d1117" stroke-width="2.5"/>
+    <circle cx="20" cy="20" r="18.5" fill="none" stroke="#ffffff66" stroke-width="1"/>
+    <path d="M6 12 Q20 18 34 12 M6 28 Q20 22 34 28" fill="none" stroke="#ffffff33" stroke-width="1"/>
+    <text x="20" y="21" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-weight="800" font-size="${fs}" font-family="GameFont,sans-serif">${short}</text>
+  </svg>`;
+}
+function badgeName(id, txt, size = 22) { return `<span class="badge-name">${teamBadge(id, size)}<span>${txt}</span></span>`; }
+
+// 능력치 레이더 차트 (타자 4축 / 투수 3축)
+function radarChart(p, size = 130) {
+  const cx = size / 2, cy = size / 2, R = size * 0.32;
+  const axes = p.isPitcher ? [['구속', 'velo'], ['제구', 'control'], ['구위', 'stuff']]
+    : [['파워', 'power'], ['컨택', 'contact'], ['주루', 'speed'], ['수비', 'defense']];
+  const n = axes.length;
+  const ang = i => (-Math.PI / 2) + (i * 2 * Math.PI / n);
+  const pt = (i, r) => [cx + Math.cos(ang(i)) * r, cy + Math.sin(ang(i)) * r];
+  const norm = v => Math.max(0.08, Math.min(1, (v - 45) / 37));
+  const col = ovrColor(p.ovr);
+  let grid = '';
+  [0.33, 0.66, 1].forEach(g => { grid += `<polygon points="${axes.map((_, i) => pt(i, R * g).join(',')).join(' ')}" fill="none" stroke="#2a3340" stroke-width="1"/>`; });
+  let axl = '', lab = '';
+  axes.forEach(([label, key], i) => {
+    const [x, y] = pt(i, R); axl += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#2a3340"/>`;
+    const [lx, ly] = pt(i, R + 12);
+    lab += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="#8b98a8" font-size="9">${label}</text>`;
+    lab += `<text x="${lx}" y="${ly + 9}" text-anchor="middle" fill="${col}" font-size="9" font-weight="800">${p.stats[key]}</text>`;
+  });
+  const poly = axes.map(([_, key], i) => pt(i, R * norm(p.stats[key])).join(',')).join(' ');
+  const dots = axes.map(([_, key], i) => { const [x, y] = pt(i, R * norm(p.stats[key])); return `<circle cx="${x}" cy="${y}" r="2.5" fill="${col}"/>`; }).join('');
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${grid}${axl}<polygon points="${poly}" fill="${col}55" stroke="${col}" stroke-width="2"/>${dots}${lab}</svg>`;
+}
+
+// 야구장 베이스 SVG (공통)
+function ballField(extra, max = 220) {
+  return `<div class="field-wrap" style="max-width:${max}px;margin:0 auto"><svg width="100%" viewBox="0 0 200 180">
+    <path d="M100 158 L20 74 A114 114 0 0 1 180 74 Z" fill="#1d3f1f" stroke="#13280f"/>
+    <path d="M100 158 L150 112 L100 66 L50 112 Z" fill="#6b4a2f"/>
+    <path d="M100 150 L142 112 L100 74 L58 112 Z" fill="#235024"/>
+    <path d="M100 158 L156 112 M100 158 L44 112" stroke="#e8e8e8" stroke-width="1.4" fill="none"/>
+    <circle cx="100" cy="116" r="9" fill="#7a5232"/>
+    ${extra}</svg></div>`;
+}
+function baseRect(x, y, on) { return `<rect x="${x - 7}" y="${y - 7}" width="14" height="14" transform="rotate(45 ${x} ${y})" fill="${on ? '#f0a500' : '#cfd6df'}" stroke="#0d1117" stroke-width="1"/>`; }
+function gameField(g) {
+  const b = g.bases;
+  const extra = baseRect(150, 112, b[0]) + baseRect(100, 66, b[1]) + baseRect(50, 112, b[2])
+    + `<polygon points="100,152 106,156 106,162 94,162 94,156" fill="#e8e8e8" stroke="#0d1117"/>`;
+  return ballField(extra, 220);
+}
+const FIELD_POS = { C: [100, 156], '1B': [150, 110], '2B': [126, 86], SS: [74, 86], '3B': [50, 110], LF: [46, 50], CF: [100, 32], RF: [154, 50], P: [100, 116] };
+function fieldDot(x, y, pos, name, c) {
+  const nm = name && name.length > 4 ? name.slice(0, 4) : (name || '');
+  return `<g><circle cx="${x}" cy="${y}" r="3.2" fill="${c}" stroke="#0d1117"/>
+    <text x="${x}" y="${y - 6}" text-anchor="middle" font-size="7" fill="#cfd6df" font-weight="700">${pos}</text>
+    ${name ? `<text x="${x}" y="${y + 11}" text-anchor="middle" font-size="7.5" fill="#fff">${nm}</text>` : ''}</g>`;
+}
+function lineupField(draft) {
+  let extra = fieldDot(100, 116, 'P', getP(draft.pitcher).name, '#388bfd');
+  for (const [pid, pos] of Object.entries(draft.posByPid)) {
+    if (pos === 'DH' || !FIELD_POS[pos]) continue;
+    const [x, y] = FIELD_POS[pos]; extra += fieldDot(x, y, pos, getP(+pid).name, '#f0a500');
+  }
+  return ballField(extra, 300);
+}
+function proficiencyField(p, max = 190) {
+  let extra = '';
+  for (const pos of ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF']) {
+    const [x, y] = FIELD_POS[pos]; const g = p.prof[pos]; const c = gradeColor(g);
+    extra += `<g><circle cx="${x}" cy="${y}" r="10.5" fill="${g === 'E' ? '#1c2330' : c}" stroke="${c}" stroke-width="1.5"/>
+      <text x="${x}" y="${y - 1}" text-anchor="middle" dominant-baseline="middle" font-size="7.5" fill="${g === 'E' ? '#566' : '#0d1117'}" font-weight="800">${pos}</text>
+      <text x="${x}" y="${y + 7}" text-anchor="middle" font-size="6.5" fill="${g === 'E' ? '#566' : '#0d1117'}" font-weight="700">${g}</text></g>`;
+  }
+  return ballField(extra, max);
+}
+
+// 이닝별 스코어보드
+function lineScoreTable(g) {
+  const maxInn = Math.max(9, g.inning, g.lineScore.home.length, g.lineScore.away.length);
+  let head = '<th></th>';
+  for (let i = 1; i <= maxInn; i++) head += `<th>${i}</th>`;
+  head += '<th>R</th><th>H</th><th>E</th>';
+  const cell = (side, i) => {
+    const v = g.lineScore[side][i];
+    if (v != null) return v;
+    const inn = i + 1;
+    const started = side === 'away' ? (g.inning >= inn) : (g.inning > inn || (g.inning === inn && g.half === 'bot') || g.finished);
+    return started ? (g.inning === inn && !g.finished && ((side === 'away' && g.half === 'top') || (side === 'home' && g.half === 'bot')) ? '·' : 0) : '';
+  };
+  const row = (side) => { let r = `<td class="l">${badgeName(side === 'home' ? g.homeTeam.id : g.awayTeam.id, teamShort(side === 'home' ? g.homeTeam.id : g.awayTeam.id), 18)}</td>`;
+    for (let i = 0; i < maxInn; i++) r += `<td>${cell(side, i)}</td>`;
+    r += `<td>${g.score[side]}</td><td>${g.hits[side]}</td><td>${g.errors[side]}</td>`; return r; };
+  return `<table class="linescore"><thead><tr>${head}</tr></thead><tbody><tr>${row('away')}</tr><tr>${row('home')}</tr></tbody></table>`;
+}
+
+// 최근 전적 스트립
+function formStrip(teamId) {
+  const res = LEAGUE.results.filter(r => r.phase === 'regular' && (r.home === teamId || r.away === teamId)).slice(0, 10).reverse();
+  if (!res.length) return '<span class="mut" style="font-size:11px">-</span>';
+  return res.map(r => { const home = r.home === teamId; const my = home ? r.hs : r.as, op = home ? r.as : r.hs;
+    const c = my > op ? '#3fb950' : my < op ? '#f85149' : '#8b98a8';
+    return `<span title="${teamShort(home ? r.away : r.home)} ${my}:${op}" style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${c};margin-right:2px"></span>`; }).join('');
+}
+// 기록 막대
+function lbar(v, max, color) { const pct = max ? Math.max(4, (v / max) * 100) : 0; return `<span class="lbar"><i style="width:${pct}%;background:${color || 'var(--acc)'}"></i></span>`; }
+// 스태미나/피로 바
+function staminaBar(p, used) {
+  const pct = Math.max(0, Math.min(100, (1 - used / (p.stamina + 30)) * 100));
+  const c = pct > 50 ? '#3fb950' : pct > 25 ? '#f0a500' : '#f85149';
+  return `<span class="stamina"><i style="width:${pct}%;background:${c}"></i></span>`;
+}
+
+// 선수 상세 모달
+function batterLine(p) {
+  const b = p.season;
+  return `<table style="font-size:12px"><thead><tr><th>G</th><th>타석</th><th>타율</th><th>HR</th><th>타점</th><th>득점</th><th>도루</th><th>OBP</th><th>SLG</th><th>OPS</th><th>BB</th><th>K</th></tr></thead>
+    <tbody><tr><td>${b.g || 0}</td><td>${b.pa}</td><td>${fmt3(avg(b))}</td><td>${b.hr}</td><td>${b.rbi}</td><td>${b.r}</td><td>${b.sb}</td><td>${fmt3(obp(b))}</td><td>${fmt3(slg(b))}</td><td><b>${ops(b).toFixed(3).replace(/^0/, '')}</b></td><td>${b.bb}</td><td>${b.k}</td></tr></tbody></table>`;
+}
+function pitcherLine(p) {
+  const s = p.pseason;
+  return `<table style="font-size:12px"><thead><tr><th>G</th><th>선발</th><th>승</th><th>패</th><th>S</th><th>H</th><th>이닝</th><th>ERA</th><th>WHIP</th><th>K</th><th>BB</th></tr></thead>
+    <tbody><tr><td>${s.g}</td><td>${s.gs}</td><td>${s.w}</td><td>${s.l}</td><td>${s.sv}</td><td>${s.hld}</td><td>${ipStr(s)}</td><td><b>${era(s).toFixed(2)}</b></td><td>${whip(s).toFixed(2)}</td><td>${s.k}</td><td>${s.bb}</td></tr></tbody></table>`;
+}
+UIH.openPlayer = (pid) => {
+  const p = getP(pid); if (!p) return;
+  showModal(`<div class="row" style="align-items:center;gap:10px">
+      ${teamBadge(p.team, 42)}
+      <div><h2 style="margin:0">#${fmtNum(p)} ${p.name}</h2>
+        <span class="mut">${LEAGUE.teams[p.team].name} · ${p.age}세 · ${p.isPitcher ? roleK(p.role) : p.primary} · ${p.level}군</span></div>
+      <span class="spacer"></span>${ovrBadge(p.ovr)} ${p.cur < p.peak ? `<span class="tag">잠재 ${p.peak}</span>` : ''}
+    </div>
+    <div style="margin:6px 0">${injTag(p) || (p.fatigue > 0 ? `<span class="mut" style="font-size:11px">피로도 ${Math.round(p.fatigue)}</span>` : '')}</div>
+    <div class="radar-grid">
+      <div style="text-align:center">${radarChart(p, 158)}<div class="mut" style="font-size:11px">세부 능력치</div></div>
+      ${p.isPitcher ? '' : `<div style="text-align:center">${proficiencyField(p, 180)}<div class="mut" style="font-size:11px">포지션 숙련도 (A~E)</div></div>`}
+    </div>
+    <div class="sec-title">2026 시즌 성적</div>${p.isPitcher ? pitcherLine(p) : batterLine(p)}
+    <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn-primary" onclick="closeModal()">닫기</button></div>`);
+};
+
+// 구단 스카우트 뷰 (read-only)
+function renderTeamView(teamId) {
+  UI.screen = 'teamview';
+  const t = LEAGUE.teams[teamId]; const lv = UI._tvTab || 1;
+  const players = t.players.filter(p => p.level === lv);
+  const groups = [['P', '투수'], ['C', '포수'], ['IF', '내야수'], ['OF', '외야수']];
+  APP().innerHTML = topbar() + `
+    <div class="panel">
+      <div class="row" style="align-items:center">
+        ${teamBadge(teamId, 44)}
+        <div><h2 style="margin:0">${t.name}</h2><span class="mut">오버롤 ${t.ovr} · 난이도 ${t.difficulty} · 주장 ${t.captain}</span></div>
+        <span class="spacer"></span><button class="btn-ghost" onclick="renderStandings()">← 순위로</button>
+      </div>
+      <div class="mut" style="font-size:12px;margin-top:6px">선발: ${t.rotationNames.join(' · ')} / 마무리: ${t.closerName}</div>
+      <div class="subtabs row" style="margin-top:8px">
+        <button class="${lv === 1 ? 'active' : ''}" onclick="UIH.tvTab('${teamId}',1)">1군</button>
+        <button class="${lv === 2 ? 'active' : ''}" onclick="UIH.tvTab('${teamId}',2)">2군</button>
+      </div>
+      ${groups.map(([g, label]) => {
+        const ps = players.filter(p => p.group === g).sort((a, b) => b.ovr - a.ovr);
+        if (!ps.length) return '';
+        return `<div class="sec-title">${label}</div><div class="flex-wrap">
+          ${ps.map(p => `<span class="tag clickrow" onclick="UIH.openPlayer(${p.pid})">#${fmtNum(p)} ${p.name} ${ovrBadge(p.ovr)}${p.isPitcher ? ' ' + roleK(p.role) : ' ' + p.primary}</span>`).join('')}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+UIH.tvTab = (id, n) => { UI._tvTab = n; renderTeamView(id); };

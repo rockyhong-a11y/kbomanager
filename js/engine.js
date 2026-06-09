@@ -140,6 +140,7 @@ class Game {
     this.outs = 0;
     this.bases = [null, null, null];
     this.score = { home: 0, away: 0 };
+    this.lineScore = { home: [], away: [] };   // 이닝별 득점
     this.hits = { home: 0, away: 0 };
     this.errors = { home: 0, away: 0 };
     this.battingIdx = { home: 0, away: 0 };
@@ -263,6 +264,7 @@ class Game {
     batter.season.rbi += rbi;
     if (runsScored) {
       this.score[side] += runsScored;
+      this.lineScore[side][this.inning - 1] = (this.lineScore[side][this.inning - 1] || 0) + runsScored;
       pitcher._runsAllowed += runsScored;
       pitcher.pseason.er += runsScored; // 간이: 전부 자책
       if (outcome === 'HR') {/* 득점은 위에서 r++ 처리됨, 주자 득점은 별도 */}

@@ -81,6 +81,22 @@ select,input{background:var(--panel2);color:var(--txt);border:1px solid var(--li
 .kpi b{font-size:20px;display:block}
 .subtabs button{background:transparent;border-bottom:2px solid transparent;border-radius:0;color:var(--mut)}
 .subtabs button.active{color:var(--txt);border-color:var(--acc)}
+
+/* 시각화 */
+.linescore{width:auto;margin:0 auto;font-variant-numeric:tabular-nums}
+.linescore th,.linescore td{padding:3px 7px;border:none;border-bottom:1px solid var(--line);min-width:22px}
+.linescore td:last-child,.linescore td:nth-last-child(2),.linescore th:last-child,.linescore th:nth-last-child(2){background:var(--panel2)}
+.linescore td:nth-last-child(3),.linescore th:nth-last-child(3){background:var(--panel2);font-weight:800}
+.field-wrap{background:radial-gradient(circle at 50% 95%,#16321a,#0d1117 75%);border:1px solid var(--line);border-radius:12px;padding:6px}
+.clickrow{cursor:pointer}
+.clickrow:hover{background:var(--panel2)}
+.lbar{height:8px;border-radius:4px;background:var(--panel2);overflow:hidden;min-width:46px;flex:1}
+.lbar i{display:block;height:100%}
+.stamina{height:6px;border-radius:3px;background:#2a3340;overflow:hidden;width:120px;display:inline-block;vertical-align:middle}
+.stamina i{display:block;height:100%}
+.radar-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center}
+.badge-name{display:inline-flex;align-items:center;gap:6px}
+.outdot.b{background:transparent}
 /* ===== 모바일 최적화 (아이폰 13 Pro Max · 428px 기준) ===== */
 @media(max-width:640px){
   body{font-size:13px}
