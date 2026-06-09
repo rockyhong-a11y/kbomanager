@@ -692,8 +692,9 @@ function toast(msg) {
  * ============================================================ */
 function teamColor(id) { const r = TEAMS_RAW[id]; const c = (LEAGUE.teams && LEAGUE.teams[id]) ? LEAGUE.teams[id].color : r.color; return c === '#000000' ? '#3b3b3b' : c; }
 function teamShort(id) { return (LEAGUE.teams && LEAGUE.teams[id]) ? LEAGUE.teams[id].short : TEAMS_RAW[id].short; }
-// 팀 엠블럼 (유니폼 크레스트 느낌의 원형 배지 + 야구공 실밥)
-function teamBadge(id, size = 30) {
+// 팀 엠블럼 — 이미지 로고(img/logos/<id>.png) 우선, 없으면 SVG 크레스트 폴백
+const LOGO_EXT = 'png';
+function teamCrestSVG(id, size) {
   const color = (LEAGUE.teams && LEAGUE.teams[id]) ? LEAGUE.teams[id].color : TEAMS_RAW[id].color;
   const short = teamShort(id);
   const fs = short.length >= 3 ? 11 : 15;
@@ -703,6 +704,12 @@ function teamBadge(id, size = 30) {
     <path d="M6 12 Q20 18 34 12 M6 28 Q20 22 34 28" fill="none" stroke="#ffffff33" stroke-width="1"/>
     <text x="20" y="21" text-anchor="middle" dominant-baseline="middle" fill="#fff" font-weight="800" font-size="${fs}" font-family="GameFont,sans-serif">${short}</text>
   </svg>`;
+}
+function teamBadge(id, size = 30) {
+  return `<span class="emblem" style="width:${size}px;height:${size}px">` +
+    `<img src="img/logos/${id}.${LOGO_EXT}" alt="${teamShort(id)}" loading="lazy" ` +
+    `onerror="this.style.display='none';this.nextElementSibling.style.display='inline-flex'">` +
+    `<span class="emblem-fb" style="display:none">${teamCrestSVG(id, size)}</span></span>`;
 }
 function badgeName(id, txt, size = 22) { return `<span class="badge-name">${teamBadge(id, size)}<span>${txt}</span></span>`; }
 

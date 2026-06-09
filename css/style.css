@@ -96,6 +96,10 @@ select,input{background:var(--panel2);color:var(--txt);border:1px solid var(--li
 .stamina i{display:block;height:100%}
 .radar-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center}
 .badge-name{display:inline-flex;align-items:center;gap:6px}
+.emblem{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;background:#fff;border-radius:22%;overflow:hidden;flex:0 0 auto;box-shadow:0 0 0 1px #0d1117}
+.emblem img{width:100%;height:100%;object-fit:contain;display:block}
+.emblem-fb{width:100%;height:100%;align-items:center;justify-content:center}
+.emblem-fb svg{width:100%;height:100%;display:block}
 .outdot.b{background:transparent}
 /* ===== 모바일 최적화 (아이폰 13 Pro Max · 428px 기준) ===== */
 @media(max-width:640px){
